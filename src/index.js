@@ -53,7 +53,8 @@ export default class Arcus {
             this._frames = new FrameManager(
                 data.frames.map(frameName => new Frame(
                     frameName,
-                    data.nodes.map(nodeName => new Node(nodeName, { size: this.config.nodeSize })),
+                    data.nodes.map(node => new Node(node.name,
+                        Object.assign({ size: this.config.nodeSize }, node.config))),
                     { sl: this._slManager }
                 ))
             );

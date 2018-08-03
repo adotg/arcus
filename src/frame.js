@@ -20,7 +20,7 @@ const drawMarks = (mount, nodes, config) => {
     sel = mount.selectAll('circle').data(nodes);
     sel.exit().remove();
     sel = sel.enter().append('circle').attr('cx', 0).attr('cy', (d, i) => i * config.nodeSpacing)
-        .attr('r', node => node.config.size).classed('arcus-frame-node', true);
+        .attr('r', node => node.config.size).classed('arcus-frame-node', true).style('fill', d => d.config.color);
     return sel;
 };
 

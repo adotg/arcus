@@ -17,7 +17,12 @@
     <script type="text/javascript">
       const data = {
         frames: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4'],
-        nodes: ['To Do', 'In Progess', 'In Review', 'Done']
+        nodes: [
+          { name: 'To Do', config: { color: '#9e9e9e' }},
+          { name: 'In Progess', config: { color: '#3f51b5' }},
+          { name: 'In Review', config: { color: '#ffc107' }},
+          { name: 'Done', config: { color: '#009688' }}
+        ]
       };
       const Arcus = arcus.default;
 
