@@ -19,5 +19,7 @@ export default class FrameManager {
         const labelsSize = this.frames.map(frame => frame.getLabelSize().width);
         config.labelBBox = Math.min(Math.max(...labelsSize), config.maxFrameLabelLength);
         this.frames.forEach((frame, i) => frame.draw(mount.select(`.arcus-frame-${i}`), config));
+
+        return this;
     }
 }

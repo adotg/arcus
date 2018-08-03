@@ -25,11 +25,14 @@ const drawMarks = (mount, nodes, config) => {
 };
 
 export default class Frame {
-    constructor (name, nodes, dependencies) {
+    constructor (name, nodes, order, dependencies) {
         this.name = name;
         this.nodes = nodes;
+        this.order = order;
         this.offset = null;
         this._dep = dependencies;
+
+        nodes.forEach(node => node.pOrder = order);
     }
 
     getLabelSize () {

@@ -4,6 +4,7 @@ import Node from './node';
 import Frame from './frame';
 import FrameManager from './frame-manager';
 import Edge from './edge';
+import EdgeManager from './edge-manager';
 import { resolver } from './utils';
 
 export default class Arcus {
@@ -56,15 +57,17 @@ export default class Arcus {
             this._data = data = params[0];
             this._frames = new FrameManager(
                 data.frames.map((frame, i) => {
-                    const offset = i * (data.nodes.length * this.config.nodeSpacing + this.config.frameSpacing);
+                    const offset = i * ((data.nodes.length - 1) * this.config.nodeSpacing + this.config.frameSpacing);
                     const inst = new Frame(
                         frame.name,
-                        data.nodes.map((node, i) => {
-                            let nInst = new Node(node.name, Object.assign({ size: this.config.nodeSize }, node.config));
+                        data.nodes.map((node, ii) => {
+                            let nInst = new Node(node.name, ii,
+                                Object.assign({ size: this.config.nodeSize }, node.config));
                             nInst.frameOffset = offset;
-                            nInst.offsetY = i * this.config.nodeSpacing;
+                            nInst.offsetY = ii * this.config.nodeSpacing;
                             return nInst;
                         }),
+                        i,
                         { sl: this._slManager }
                     );
 
@@ -74,10 +77,11 @@ export default class Arcus {
             ));
             let resolve = resolver(this._frames.frames, this.config);
 
-            this._edges = data.edges.map(edge => new Edge(resolve(edge.from), resolve(edge.to), edge.key, {
-                inf: edge.inf,
-                path: [edge.from, edge.to]
-            }));
+            this._edges = new EdgeManager(data.edges.map(edge => new Edge(resolve(edge.from), resolve(edge.to),
+                edge.key, {
+                    inf: edge.inf,
+                    path: [edge.from, edge.to]
+                })), this._frames);
             return this;
         }
         return this._data;
@@ -95,6 +99,7 @@ export default class Arcus {
             `translate(${this.config.padding[0]}, ${this.config.padding[1] + this.config.nodeSize * 0.5})`);
 
         this._frames.draw(sel, this.config);
+        this._edges.draw(sel, this.config);
 
         body.attr('height', `${frameSize * this.config.frameLength + (frameSize - 1) * this.config.frameSpacing +
             2 * this.config.padding[1] + this.config.nodeSize}px`);
