@@ -28,6 +28,7 @@ export default class Frame {
     constructor (name, nodes, dependencies) {
         this.name = name;
         this.nodes = nodes;
+        this.offset = null;
         this._dep = dependencies;
     }
 

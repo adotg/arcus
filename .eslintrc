@@ -18,6 +18,7 @@
     "comma-dangle": "off",
     "no-underscore-dangle": 0,
     "no-mixed-operators" : 0,
+    "no-cond-assign": "off",
     "brace-style": "off",
     "no-param-reassign": "off",
     "no-iterator" : "off",

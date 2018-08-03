@@ -3,6 +3,8 @@ import SmartLabelManager from 'fusioncharts-smartlabel';
 import Node from './node';
 import Frame from './frame';
 import FrameManager from './frame-manager';
+import Edge from './edge';
+import { resolver } from './utils';
 
 export default class Arcus {
     constructor (config) {
@@ -14,6 +16,7 @@ export default class Arcus {
         this._bodyEl = null;
         this._data = null;
         this._frames = null;
+        this._edges = null;
         this._slManager = new SmartLabelManager(+new Date());
     }
 
@@ -23,7 +26,8 @@ export default class Arcus {
             frameSpacing: 80,
             nodeSize: 4,
             maxFrameLabelLength: 120,
-            padding: [20, 20]
+            padding: [20, 20],
+            delimiter: '.'
         };
     }
 
@@ -51,13 +55,29 @@ export default class Arcus {
 
             this._data = data = params[0];
             this._frames = new FrameManager(
-                data.frames.map(frameName => new Frame(
-                    frameName,
-                    data.nodes.map(node => new Node(node.name,
-                        Object.assign({ size: this.config.nodeSize }, node.config))),
-                    { sl: this._slManager }
-                ))
-            );
+                data.frames.map((frame, i) => {
+                    const offset = i * (data.nodes.length * this.config.nodeSpacing + this.config.frameSpacing);
+                    const inst = new Frame(
+                        frame.name,
+                        data.nodes.map((node, i) => {
+                            let nInst = new Node(node.name, Object.assign({ size: this.config.nodeSize }, node.config));
+                            nInst.frameOffset = offset;
+                            nInst.offsetY = i * this.config.nodeSpacing;
+                            return nInst;
+                        }),
+                        { sl: this._slManager }
+                    );
+
+                    inst.offset = offset;
+                    return inst;
+                }
+            ));
+            let resolve = resolver(this._frames.frames, this.config);
+
+            this._edges = data.edges.map(edge => new Edge(resolve(edge.from), resolve(edge.to), edge.key, {
+                inf: edge.inf,
+                path: [edge.from, edge.to]
+            }));
             return this;
         }
         return this._data;
