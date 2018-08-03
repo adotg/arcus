@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test space</title>
+    <style>
+      .arcus-frame-line {
+        stroke: #dcdcdc;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='root'></div>
+    <script type="text/javascript" src="./arcus.js"></script>
+    <script type="text/javascript">
+      const data = {
+        frames: ['Sprint 1', 'Sprint 2', 'Sprint 3', 'Sprint 4'],
+        nodes: ['To Do', 'In Progess', 'In Review', 'Done']
+      };
+      const Arcus = arcus.default;
+
+      new Arcus()
+        .mount('#root', [600, 1200])
+        .data(data)
+        .render();
+        
+    </script>
+  </body>
+</html>
