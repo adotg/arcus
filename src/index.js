@@ -1,8 +1,8 @@
 import { select } from 'd3-selection';
+import SmartLabelManager from 'fusioncharts-smartlabel';
 import Node from './node';
 import Frame from './frame';
 import FrameManager from './frame-manager';
-import SmartLabelManager from 'fusioncharts-smartlabel';
 
 export default class Arcus {
     constructor (config) {
@@ -69,7 +69,7 @@ export default class Arcus {
         this.config.frameLength = (this._data.nodes.length - 1) * this.config.nodeSpacing;
 
         let sel = body.selectAll('g').data([1]);
-        
+
         sel.exit().remove();
         sel = sel.enter().append('g').attr('transform',
             `translate(${this.config.padding[0]}, ${this.config.padding[1] + this.config.nodeSize * 0.5})`);
