@@ -1,4 +1,5 @@
 import Connection from './connection';
+import BandConnection from './band-connection';
 
 const connectionResolver = (edges) => {
     const connectionPool = {};
@@ -19,11 +20,50 @@ const connectionResolver = (edges) => {
     return conns;
 };
 
+const bandConnectionResolver = (edges) => {
+    const bandPool = {};
+    let seq;
+    const conns = [];
+
+    for (let i = 0, edge; edge = edges[i++];) {
+        if ((seq = edge.seqStr()) in bandPool) {
+            bandPool[seq].push(edge);
+        } else {
+            bandPool[seq] = [edge];
+        }
+    }
+
+    for (let key in bandPool) {
+        conns.push(new BandConnection(bandPool[key]));
+    }
+
+    return conns;
+};
+
+const applySequence = (edges) => {
+    const seqMap = { };
+    let seqStr;
+    let seqNo;
+
+    for (let i = 0, edge; edge = edges[i++];) {
+        seqStr = edge.seqStr();
+        if (seqStr in seqMap) {
+            seqNo = ++seqMap[seqStr];
+            edge.sequence = seqNo;
+        } else {
+            seqMap[seqStr] = 0;
+            edge.sequence = 0;
+        }
+    }
+};
+
 export default class EdgeManager {
     constructor (edges, frames) {
         this.edges = edges;
         this.frames = frames;
+        applySequence(edges);
         this.connections = connectionResolver(edges);
+        this.bandConnections = bandConnectionResolver(edges);
     }
 
     draw (mount, config) {
@@ -35,9 +75,9 @@ export default class EdgeManager {
         sel = sel.enter().append('g').attr('class', 'arcus-edges')
             .attr('transform', `translate(${config.labelBBox}, 0)`);
 
-        const conPath = this.connections.map(con => [con.path(), con]);
+        const conPath = this.bandConnections.map(con => [con.path(), con]);
         sel = sel.selectAll('path').data(conPath);
         sel.exit().remove();
-        sel.enter().append('path').classed('arcus-edge', true).merge(sel).attr('d', d => d[0].forward);
+        sel.enter().append('path').classed('arcus-edge', true).merge(sel).attr('d', d => d[0]);
     }
 }

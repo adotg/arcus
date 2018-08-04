@@ -17,3 +17,22 @@ export const resolver = (frames, config) => {
         return frameMap[path[0]].nodeMap[path[1]].inst;
     };
 };
+
+export const EdgeDirection = {
+    FORWARD: 1,
+    BACKWARD: -1
+};
+
+export const edgeOrderCode = (edge) => {
+    if (edge.to.pOrder - edge.from.pOrder === 0) {
+        if (edge.to.order - edge.from.order > 0) {
+            return EdgeDirection.FORWARD;
+        }
+
+        return EdgeDirection.BACKWARD;
+    } else if (edge.to.pOrder - edge.from.pOrder > 0) {
+        return EdgeDirection.FORWARD;
+    }
+
+    return EdgeDirection.BACKWARD;
+};
