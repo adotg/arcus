@@ -63,7 +63,7 @@ export default class EdgeManager {
         this.frames = frames;
         applySequence(edges);
         this.connections = connectionResolver(edges);
-        this.bandConnections = bandConnectionResolver(edges);
+        // this.bandConnections = bandConnectionResolver(edges);
     }
 
     draw (mount, config) {
@@ -75,9 +75,15 @@ export default class EdgeManager {
         sel = sel.enter().append('g').attr('class', 'arcus-edges')
             .attr('transform', `translate(${config.labelBBox}, 0)`);
 
-        const conPath = this.bandConnections.map(con => [con.path(), con]);
-        sel = sel.selectAll('path').data(conPath);
+        const conPath = this.connections.map(con => con.path());
+        const flattenConPath = { forward: [], backward: [] };
+        for (let i = 0, path; path = conPath[i++];) {
+            flattenConPath.forward.push(...path.forward);
+        }
+
+        sel = sel.selectAll('path').data(flattenConPath.forward);
         sel.exit().remove();
-        sel.enter().append('path').classed('arcus-edge', true).merge(sel).attr('d', d => d[0]);
+        sel.enter().append('path').classed('arcus-edge', true).merge(sel).attr('d', d =>
+            d[0]).style('stroke', d => d[1].to.config.color);
     }
 }

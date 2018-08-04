@@ -24,12 +24,12 @@ export default class Connection {
     path () {
         return {
             forward: this.directions.forward.map((edge) => {
-                const movement = edge.sequence * 8;
+                const movement = edge.sequence * 4;
                 const fpx = edge.from.px();
                 const tpx = edge.to.px();
-                const r = (tpx - fpx) / 2 + movement;
-                return new Bezier(0, fpx, r, fpx + movement, r, tpx - movement, 0, tpx).toSVG();
-            }).join(' ')
+                const r = (tpx - fpx) * 0.75 + movement;
+                return [new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx).toSVG(), edge, this];
+            })
         };
     }
 }

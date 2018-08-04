@@ -14,13 +14,13 @@ export default class BandConnection {
         const fpx = sample.from.px();
         const tpx = sample.to.px();
         const movement = (this.bands.length - 1) * 8;
-        const rStart = (tpx - fpx) / 2;
-        const rEnd = (tpx - fpx) / 2 + movement;
+        const rStart = (tpx - fpx) * 0.75;
+        const rEnd = (tpx - fpx) * 0.75 + movement;
 
-        return [
+        return [[
             new Bezier(0, fpx, rStart, fpx, rStart, tpx, 0, tpx).toSVG(),
-            new Bezier(0, tpx, rEnd, tpx - movement, rEnd, fpx + movement, 0, fpx).toSVG(),
+            new Bezier(0, tpx, rEnd, tpx, rEnd, fpx, 0, fpx).toSVG().replace(/M/g, 'L'),
             'Z'
-        ].join(' ');
+        ].join(' '), sample];
     }
 }
