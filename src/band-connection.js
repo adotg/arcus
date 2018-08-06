@@ -13,7 +13,7 @@ export default class BandConnection {
         const sample = this.bands[0];
         const fpx = sample.from.px();
         const tpx = sample.to.px();
-        const movement = (this.bands.length - 1) * 8;
+        const movement = (this.bands.length - 1) * 4;
         const rStart = (tpx - fpx) * 0.75;
         const rEnd = (tpx - fpx) * 0.75 + movement;
 

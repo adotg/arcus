@@ -1,3 +1,5 @@
+import { hashCode } from './utils';
+
 export default class Edge {
     constructor (from, to, key, meta) {
         this.from = from;
@@ -5,10 +7,17 @@ export default class Edge {
         this.key = key;
         this.meta = meta;
         this.sequence = null;
+
+        const path = meta.path;
+        this._seqStr = `${path[0]}-${path[1]}`;
+        this._seqHash = hashCode(this._seqStr);
     }
 
     seqStr () {
-        const path = this.meta.path;
-        return `${path[0]}-${path[1]}`;
+        return this._seqStr;
+    }
+
+    seqHash () {
+        return this._seqHash;
     }
 }
