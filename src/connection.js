@@ -1,4 +1,3 @@
-import Bezier from './bezier';
 import { edgeOrderCode, EdgeDirection } from './utils';
 
 const orderEdges = (edges) => {
@@ -23,13 +22,7 @@ export default class Connection {
 
     path () {
         return {
-            forward: this.directions.forward.map((edge) => {
-                const movement = edge.sequence * 4;
-                const fpx = edge.from.px();
-                const tpx = edge.to.px();
-                const r = (tpx - fpx) * 0.75 + movement;
-                return [new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx).toSVG(), edge, this];
-            })
+            forward: this.directions.forward.map(edge => edge.path())
         };
     }
 }
