@@ -9,11 +9,11 @@ export default class BandConnection {
         this.direction = direction(bands);
     }
 
-    path () {
+    path (expansion) {
         const sample = this.bands[0];
         const fpx = sample.from.px();
         const tpx = sample.to.px();
-        const movement = (this.bands.length - 1) * 4;
+        const movement = (this.bands.length - 1) * expansion;
         const rStart = (tpx - fpx) * 0.75;
         const rEnd = (tpx - fpx) * 0.75 + movement;
 

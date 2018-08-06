@@ -77,42 +77,14 @@ export default class EdgeManager {
         sel = sel.enter().append('g').attr('class', 'arcus-edges').attr('transform',
             `translate(${config.labelBBox}, 0)`);
 
-        // Draw the paths
-        let conPath = this.connections.map(con => con.path());
-        const flattenConPath = { forward: [], backward: [] };
-        for (let i = 0, path; path = conPath[i++];) {
-            flattenConPath.forward.push(...path.forward);
-        }
-
-        const edgeSel = sel.selectAll('path.arcus-edge').data(flattenConPath.forward);
-        edgeSel.exit().remove();
-        edgeSel.enter().append('path').classed('arcus-edge', true).merge(edgeSel).attr('d', d =>
-            d[0]).style('stroke', d => d[1].to.config.color).attr('class', function (d) {
-                let cls = select(this).attr('class');
-                cls += ` ${d[1].seqHash()}`;
-                return cls;
-            });
-
-        // Draw shadows for interaction
-        conPath = [];
-        for (let key in this.bandConnections) {
-            conPath.push(this.bandConnections[key].path());
-        }
-
-        let shadowSel = sel.selectAll('path.arcus-edge-shadow').data(conPath);
-        shadowSel.exit().remove();
-        shadowSel = shadowSel.enter().append('path').classed('arcus-edge-shadow', true).classed('shadow', true)
-            .merge(shadowSel).attr('d', d => d[0]).attr('class', function (d) {
-                let cls = select(this).attr('class');
-                cls += ` ${d[1].seqHash()}`;
-                return cls;
-            });
+        const [, shadowSel] = this.__drawConnections(sel, 4);
 
         shadowSel.on('mouseover', () => {
             console.log('over');
             const el = select(event.target);
             const hash = el.attr('class').split(/\s+/)[2];
-            console.log(mouse(sel.node()));
+            const point = mouse(sel.node());
+            this.bandConnections[hash].viewExpand(8);
             // clearTimeout(this._evtRecords.outTimer);
 
             // // this.bandConnections[hash].viewExpand();
@@ -132,5 +104,39 @@ export default class EdgeManager {
         //         clearTimeout(this._evtRecords.timer);
         //     }, 16);
         });
+    }
+
+    __drawConnections (mount, expansion) {
+        // Draw the paths
+        let conPath = this.connections.map(con => con.path(expansion));
+        const flattenConPath = { forward: [], backward: [] };
+        for (let i = 0, path; path = conPath[i++];) {
+            flattenConPath.forward.push(...path.forward);
+        }
+
+        const edgeSel = mount.selectAll('path.arcus-edge').data(flattenConPath.forward);
+        edgeSel.exit().remove();
+        edgeSel.enter().append('path').classed('arcus-edge', true).attr('class', function (d) {
+            let cls = select(this).attr('class');
+            cls += ` ${d[1].seqHash()}`;
+            return cls;
+        }).merge(edgeSel).attr('d', d => d[0]).style('stroke', d => d[1].to.config.color);
+
+        // Draw shadows for interaction
+        conPath = [];
+        for (let key in this.bandConnections) {
+            conPath.push(this.bandConnections[key].path(expansion));
+        }
+
+        let shadowSel = mount.selectAll('path.arcus-edge-shadow').data(conPath);
+        shadowSel.exit().remove();
+        shadowSel = shadowSel.enter().append('path').classed('arcus-edge-shadow', true).classed('shadow', true)
+            .attr('class', function (d) {
+                let cls = select(this).attr('class');
+                cls += ` ${d[1].seqHash()}`;
+                return cls;
+            }).merge(shadowSel).attr('d', d => d[0]);
+
+        return [edgeSel, shadowSel];
     }
 }
