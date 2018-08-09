@@ -12,6 +12,15 @@ export default class Edge {
         const path = meta.path;
         this._seqStr = `${path[0]}-${path[1]}`;
         this._seqHash = hashCode(this._seqStr);
+        this._options = {
+            path: this.constructor.pathOptions()
+        };
+    }
+
+    static pathOptions () {
+        return {
+            expansionFactor: 4
+        };
     }
 
     seqStr () {

@@ -13,7 +13,7 @@ export default class Shadow {
         const edges = this.edges;
         return [[
             edges[0].path()[0],
-            edges[edges.length - 1].path()[0].replace(/M/g, 'L'),
+            edges[edges.length - 1].reversePath()[0].replace(/M/g, 'L'),
             'Z'
         ].join(' '), edges[0]];
     }
