@@ -1,6 +1,18 @@
 import Bezier from './bezier';
 import { hashCode } from './utils';
 
+const flattenToLine = (path) => {
+    path = path.split(/\s+/);
+
+    for (let i = 4, l = path.length; i < l; i++) {
+        if (!(i % 2)) {
+            path[i] = 0;
+        }
+    }
+
+    return path.join(' ');
+};
+
 export default class Edge {
     constructor (from, to, key, meta) {
         this.from = from;
@@ -15,6 +27,8 @@ export default class Edge {
         this._options = {
             path: this.constructor.pathOptions()
         };
+        this._target = null;
+        this.pathHist = [];
     }
 
     static pathOptions () {
@@ -31,19 +45,35 @@ export default class Edge {
         return this._seqHash;
     }
 
+    pathOptions (_options) {
+        this._options.path = Object.assign({}, this._options.path, _options);
+        return this;
+    }
+
     path () {
-        const movement = this.sequence * 4;
+        const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();
         const tpx = this.to.px();
         const r = (tpx - fpx) * 0.75 + movement;
-        return [new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx).toSVG(), this];
+        const path = new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx).toSVG();
+        const hist = this.pathHist;
+
+        if (hist.length === 0) {
+            hist[0] = flattenToLine(path);
+        } else {
+            hist[0] = hist[1];
+        }
+        hist[1] = path;
+
+        return [path, this];
     }
 
     reversePath () {
-        const movement = this.sequence * 4;
+        const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();
         const tpx = this.to.px();
         const r = (tpx - fpx) * 0.75 + movement;
+
         return [new Bezier(0, tpx, r, tpx, r, fpx, 0, fpx).toSVG(), this];
     }
 }

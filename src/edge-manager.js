@@ -1,4 +1,6 @@
 import { select, event, mouse } from 'd3-selection';
+import { transition } from 'd3-transition';
+import { easeCubic } from 'd3-ease';
 import Connection from './connection';
 import Shadow from './shadow';
 
@@ -62,9 +64,13 @@ export default class EdgeManager {
     constructor (edges, frames) {
         this.edges = edges;
         this.frames = frames;
+
         applySequence(edges);
+
         this.connections = connectionResolver(edges);
         this.shadows = shadowResolver(edges);
+        this.transition = transition().duration(300).ease(easeCubic);
+
         this._evtRecords = {};
     }
 
@@ -77,40 +83,37 @@ export default class EdgeManager {
         sel = sel.enter().append('g').attr('class', 'arcus-edges').attr('transform',
             `translate(${config.labelBBox}, 0)`);
 
-        const [, shadowSel] = this.__drawConnections(sel, this.connections, this.shadows, { expansion: 4 });
+        const [, shadowSel] = this.__drawConnections(sel, this.connections, this.shadows);
 
         shadowSel.on('mouseover', () => {
-            console.log('over');
             const el = select(event.target);
             const hash = el.attr('class').split(/\s+/)[2];
-            const point = mouse(sel.node());
-            console.log(this.shadows[hash]);
-            // clearTimeout(this._evtRecords.outTimer);
+            // const point = mouse(sel.node());
+            const edges = this.shadows[hash].edges;
 
-            // // this.bandConnections[hash].viewExpand();
-            // this._evtRecords.overTimer = setTimeout(() => {
-            //     console.log('expand', hash);
-            // }, 16);
+            clearTimeout(this._evtRecords.outTimer);
+            this._evtRecords.overTimer = setTimeout(() => {
+                edges.forEach(edge => edge.pathOptions({ expansionFactor: 16 }));
+                this.__drawConnections(sel, this.connections, this.shadows);
+            }, 100);
         });
         shadowSel.on('mouseout', () => {
-            console.log('out');
-        //     const el = select(event.target);
-        //     const hash = el.attr('class').split(/\s+/)[1];
-        //     clearTimeout(this._evtRecords.overTimer);
+            const el = select(event.target);
+            const hash = el.attr('class').split(/\s+/)[2];
+            // const point = mouse(sel.node());
+            const edges = this.shadows[hash].edges;
 
-        //     this._evtRecords.outTimer = setTimeout(() => {
-        //         console.log('collapse', hash);
-        //         // this.bandConnections[hash].viewCollapse();
-        //         clearTimeout(this._evtRecords.timer);
-        //     }, 16);
+            clearTimeout(this._evtRecords.overTimer);
+            this._evtRecords.outTimer = setTimeout(() => {
+                edges.forEach(edge => edge.pathOptions({ expansionFactor: 4 }));
+                this.__drawConnections(sel, this.connections, this.shadows);
+            }, 100);
         });
     }
 
-    __drawConnections (mount, connections, shadows, options) {
-        const expansion = options.expansion;
-
+    __drawConnections (mount, connections, shadows) {
         // Draw the paths
-        let conPath = connections.map(con => con.path(expansion));
+        let conPath = connections.map(con => con.path());
         const flattenConPath = { forward: [], backward: [] };
         for (let i = 0, path; path = conPath[i++];) {
             flattenConPath.forward.push(...path.forward);
@@ -122,12 +125,13 @@ export default class EdgeManager {
             let cls = select(this).attr('class');
             cls += ` ${d[1].seqHash()}`;
             return cls;
-        }).merge(edgeSel).attr('d', d => d[0]).style('stroke', d => d[1].to.config.color);
+        }).merge(edgeSel).style('stroke', d => d[1].to.config.color).attr('d', d =>
+            d[1].pathHist[0]).transition(this.transition).attr('d', d => d[0]);
 
         // Draw shadows for interaction
         conPath = [];
         for (let key in shadows) {
-            conPath.push(shadows[key].path(expansion));
+            conPath.push(shadows[key].path());
         }
 
         let shadowSel = mount.selectAll('path.arcus-edge-shadow').data(conPath);

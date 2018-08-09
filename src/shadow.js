@@ -1,4 +1,3 @@
-import Bezier from './bezier';
 import { edgeOrderCode } from './utils';
 
 const direction = edges => edgeOrderCode(edges[0]);
