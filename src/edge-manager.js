@@ -132,7 +132,7 @@ export default class EdgeManager {
                 edges.forEach(edge => edge.pathOptions({ expansionFactor: 4 }));
                 union(this.shadows, 'edges').forEach(edge => edge.pathOptions({ focus: Edge.FocusMode.NA }));
                 this.__drawConnections(sel, this.connections, this.shadows);
-            }, 100);
+            }, 0);
         });
     }
 
@@ -144,7 +144,9 @@ export default class EdgeManager {
             flattenConPath.forward.push(...path.forward);
         }
 
-        let edgeSel = mount.selectAll('path.arcus-edge').data(flattenConPath.forward, d => d[1].seqHash());
+        mount.selectAll('path.arcus-edge').interrupt();
+
+        let edgeSel = mount.selectAll('path.arcus-edge').data(flattenConPath.forward);
         edgeSel.exit().remove();
         edgeSel = edgeSel.enter().append('path').classed('arcus-edge', true).attr('class', function (d) {
             let cls = select(this).attr('class');
