@@ -52,3 +52,25 @@ export const hashCode = (str) => {
     }
     return hash;
 };
+
+export const difference = (obj, subsetKey, pluck) => {
+    const arr = [];
+    for (let key in obj) {
+        if (key === subsetKey) {
+            continue;
+        }
+
+        arr.push(...obj[key][pluck]);
+    }
+
+    return arr;
+};
+
+export const union = (obj, pluck) => {
+    const arr = [];
+    for (let key in obj) {
+        arr.push(...obj[key][pluck]);
+    }
+
+    return arr;
+};

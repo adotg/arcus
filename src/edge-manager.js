@@ -1,8 +1,10 @@
 import { select, event, mouse } from 'd3-selection';
 import { transition } from 'd3-transition';
 import { easeCubic } from 'd3-ease';
+import Edge from './edge';
 import Connection from './connection';
 import Shadow from './shadow';
+import { difference, union } from './utils';
 
 const connectionResolver = (edges) => {
     const connectionPool = {};
@@ -43,6 +45,17 @@ const shadowResolver = (edges) => {
     return conns;
 };
 
+const minDist = (dists) => {
+    let min = [Number.POSITIVE_INFINITY];
+    for (let i = 0, dist; dist = dists[i++];) {
+        if (min[0] > dist[0]) {
+            min = dist;
+        }
+    }
+
+    return min;
+};
+
 const applySequence = (edges) => {
     const seqMap = { };
     let seqStr;
@@ -69,7 +82,8 @@ export default class EdgeManager {
 
         this.connections = connectionResolver(edges);
         this.shadows = shadowResolver(edges);
-        this.transition = transition().duration(300).ease(easeCubic);
+        this._transitionTime = 300;
+        this.transition = transition().duration(this._transitionTime).ease(easeCubic);
 
         this._evtRecords = {};
     }
@@ -88,13 +102,21 @@ export default class EdgeManager {
         shadowSel.on('mouseover', () => {
             const el = select(event.target);
             const hash = el.attr('class').split(/\s+/)[2];
-            // const point = mouse(sel.node());
             const edges = this.shadows[hash].edges;
+            const point = mouse(sel.node());
 
             clearTimeout(this._evtRecords.outTimer);
             this._evtRecords.overTimer = setTimeout(() => {
-                edges.forEach(edge => edge.pathOptions({ expansionFactor: 16 }));
+                this._evtRecords.overTimer = null;
+
+                edges.forEach(edge => edge.pathOptions({ expansionFactor: 16, focus: Edge.FocusMode.FOCUSED }));
+                difference(this.shadows, hash, 'edges').forEach(edge =>
+                    edge.pathOptions({ focus: Edge.FocusMode.UNFOCUSED }));
                 this.__drawConnections(sel, this.connections, this.shadows);
+
+                setTimeout(() => {
+                    const distance = edges.map((edge, i) => [edge.distance(point), i]);
+                }, this._transitionTime);
             }, 100);
         });
         shadowSel.on('mouseout', () => {
@@ -105,7 +127,10 @@ export default class EdgeManager {
 
             clearTimeout(this._evtRecords.overTimer);
             this._evtRecords.outTimer = setTimeout(() => {
+                this._evtRecords.outTimer = null;
+
                 edges.forEach(edge => edge.pathOptions({ expansionFactor: 4 }));
+                union(this.shadows, 'edges').forEach(edge => edge.pathOptions({ focus: Edge.FocusMode.NA }));
                 this.__drawConnections(sel, this.connections, this.shadows);
             }, 100);
         });
@@ -119,14 +144,21 @@ export default class EdgeManager {
             flattenConPath.forward.push(...path.forward);
         }
 
-        const edgeSel = mount.selectAll('path.arcus-edge').data(flattenConPath.forward, d => d[1].seqHash());
+        let edgeSel = mount.selectAll('path.arcus-edge').data(flattenConPath.forward, d => d[1].seqHash());
         edgeSel.exit().remove();
-        edgeSel.enter().append('path').classed('arcus-edge', true).attr('class', function (d) {
+        edgeSel = edgeSel.enter().append('path').classed('arcus-edge', true).attr('class', function (d) {
             let cls = select(this).attr('class');
             cls += ` ${d[1].seqHash()}`;
             return cls;
         }).merge(edgeSel).style('stroke', d => d[1].to.config.color).attr('d', d =>
-            d[1].pathHist[0]).transition(this.transition).attr('d', d => d[0]);
+            d[1].pathHist[0].path).transition(this.transition).attr('d', d => d[0]).style('opacity', (d) => {
+                const options = d[1].pathOptions();
+                if (options.focus === Edge.FocusMode.UNFOCUSED) {
+                    return 0.05;
+                }
+
+                return 1;
+            });
 
         // Draw shadows for interaction
         conPath = [];

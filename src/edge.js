@@ -33,7 +33,8 @@ export default class Edge {
 
     static pathOptions () {
         return {
-            expansionFactor: 4
+            expansionFactor: 4,
+            focus: Edge.FocusMode.NA
         };
     }
 
@@ -45,9 +46,13 @@ export default class Edge {
         return this._seqHash;
     }
 
-    pathOptions (_options) {
-        this._options.path = Object.assign({}, this._options.path, _options);
-        return this;
+    pathOptions (...params) {
+        if (params.length) {
+            this._options.path = Object.assign({}, this._options.path, params[0]);
+            return this;
+        }
+
+        return this._options.path;
     }
 
     path () {
@@ -55,15 +60,16 @@ export default class Edge {
         const fpx = this.from.px();
         const tpx = this.to.px();
         const r = (tpx - fpx) * 0.75 + movement;
-        const path = new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx).toSVG();
+        const inst = new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx);
+        const path = inst.toSVG();
         const hist = this.pathHist;
 
         if (hist.length === 0) {
-            hist[0] = flattenToLine(path);
+            hist[0] = { path: flattenToLine(path) };
         } else {
             hist[0] = hist[1];
         }
-        hist[1] = path;
+        hist[1] = { path, inst };
 
         return [path, this];
     }
@@ -76,4 +82,17 @@ export default class Edge {
 
         return [new Bezier(0, tpx, r, tpx, r, fpx, 0, fpx).toSVG(), this];
     }
+
+    distance (point) {
+        return this.pathHist[1].inst.project({
+            x: point[0],
+            y: point[1]
+        }).d;
+    }
 }
+
+Edge.FocusMode = {
+    FOCUSED: 1,
+    UNFOCUSED: -1,
+    NA: 0
+};
