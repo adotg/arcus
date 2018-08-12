@@ -87,7 +87,7 @@ export default class Edge {
         return this.pathHist[1].inst.project({
             x: point[0],
             y: point[1]
-        }).d;
+        });
     }
 }
 

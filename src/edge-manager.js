@@ -46,14 +46,15 @@ const shadowResolver = (edges) => {
 };
 
 const minDist = (dists) => {
-    let min = [Number.POSITIVE_INFINITY];
+    let min = { d: Number.POSITIVE_INFINITY, index: -1 };
     for (let i = 0, dist; dist = dists[i++];) {
-        if (min[0] > dist[0]) {
-            min = dist;
+        if (min.d > dist.d) {
+            min.d = dist.d;
+            min.index = i - 1;
         }
     }
 
-    return min;
+    return dists[min.index];
 };
 
 const applySequence = (edges) => {
@@ -89,6 +90,14 @@ export default class EdgeManager {
     }
 
     draw (mount, config) {
+        let selMarkG = mount
+            .selectAll('g.arcus-edge-sel-mark')
+            .data([1]);
+
+        selMarkG.exit().remove();
+        selMarkG = selMarkG.enter().append('g').attr('class', 'arcus-edge-sel-mark').attr('transform',
+            `translate(${config.labelBBox}, 0)`);
+
         let sel = mount
             .selectAll('g.arcus-edges')
             .data([1]);
@@ -97,17 +106,18 @@ export default class EdgeManager {
         sel = sel.enter().append('g').attr('class', 'arcus-edges').attr('transform',
             `translate(${config.labelBBox}, 0)`);
 
+
         const [, shadowSel] = this.__drawConnections(sel, this.connections, this.shadows);
 
         shadowSel.on('mouseover', () => {
             const el = select(event.target);
             const hash = el.attr('class').split(/\s+/)[2];
             const edges = this.shadows[hash].edges;
-            const point = mouse(sel.node());
 
             clearTimeout(this._evtRecords.outTimer);
             this._evtRecords.overTimer = setTimeout(() => {
                 this._evtRecords.overTimer = null;
+                this._evtRecords.transitionMutationLock = true;
 
                 edges.forEach(edge => edge.pathOptions({ expansionFactor: 16, focus: Edge.FocusMode.FOCUSED }));
                 difference(this.shadows, hash, 'edges').forEach(edge =>
@@ -115,9 +125,27 @@ export default class EdgeManager {
                 this.__drawConnections(sel, this.connections, this.shadows);
 
                 setTimeout(() => {
-                    const distance = edges.map((edge, i) => [edge.distance(point), i]);
+                    this._evtRecords.transitionMutationLock = false;
                 }, this._transitionTime);
             }, 100);
+        });
+        shadowSel.on('mousemove', () => {
+            if (this._evtRecords.transitionMutationLock) {
+                return;
+            }
+
+            const el = select(event.target);
+            const hash = el.attr('class').split(/\s+/)[2];
+            const edges = this.shadows[hash].edges;
+            const point = mouse(sel.node());
+            const distances = edges.map((edge, i) => {
+                const dist = edge.distance(point);
+                dist.i = i;
+                return dist;
+            });
+            const nearest = minDist(distances);
+
+            this.__showSelector(selMarkG, nearest);
         });
         shadowSel.on('mouseout', () => {
             const el = select(event.target);
@@ -128,12 +156,32 @@ export default class EdgeManager {
             clearTimeout(this._evtRecords.overTimer);
             this._evtRecords.outTimer = setTimeout(() => {
                 this._evtRecords.outTimer = null;
+                this._evtRecords.transitionMutationLock = false;
 
                 edges.forEach(edge => edge.pathOptions({ expansionFactor: 4 }));
                 union(this.shadows, 'edges').forEach(edge => edge.pathOptions({ focus: Edge.FocusMode.NA }));
+                this.__showSelector(selMarkG);
                 this.__drawConnections(sel, this.connections, this.shadows);
             }, 0);
         });
+    }
+
+    __showSelector (mount, pos) {
+        let sel = mount
+            .selectAll('circle')
+            .data(pos ? [pos] : []);
+
+        sel.exit().remove();
+
+        sel = sel
+            .enter()
+            .append('circle')
+            .merge(sel)
+            .attr('r', 4)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y);
+
+        return sel;
     }
 
     __drawConnections (mount, connections, shadows) {
