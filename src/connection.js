@@ -16,6 +16,8 @@ const orderEdges = (edges) => {
 
 export default class Connection {
     constructor (edges) {
+        edges.forEach(edge => edge.partOf(this));
+        this.edges = edges;
         this.directions = orderEdges(edges);
         this.sequence = null;
     }

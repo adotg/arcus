@@ -90,14 +90,6 @@ export default class EdgeManager {
     }
 
     draw (mount, config) {
-        let selMarkG = mount
-            .selectAll('g.arcus-edge-sel-mark')
-            .data([1]);
-
-        selMarkG.exit().remove();
-        selMarkG = selMarkG.enter().append('g').attr('class', 'arcus-edge-sel-mark').attr('transform',
-            `translate(${config.labelBBox}, 0)`);
-
         let sel = mount
             .selectAll('g.arcus-edges')
             .data([1]);
@@ -138,15 +130,18 @@ export default class EdgeManager {
             const hash = el.attr('class').split(/\s+/)[2];
             const edges = this.shadows[hash].edges;
             const point = mouse(sel.node());
-            point[1] -= 2;
             const distances = edges.map((edge, i) => {
                 const dist = edge.distance(point);
                 dist.i = i;
                 return dist;
             });
             const nearest = minDist(distances);
+            const nearestEdge = edges[nearest.i];
+            const conn = nearestEdge.partOf();
 
-            this.__showSelector(selMarkG, nearest);
+            this.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.OFF }));
+            conn.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.ON }));
+            this.__drawConnections(sel, this.connections, this.shadows);
         });
         shadowSel.on('mouseout', () => {
             const el = select(event.target);
@@ -158,31 +153,14 @@ export default class EdgeManager {
                 this._evtRecords.outTimer = null;
                 this._evtRecords.transitionMutationLock = false;
 
+                this.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.OFF }));
                 edges.forEach(edge => edge.pathOptions({ expansionFactor: 4 }));
                 union(this.shadows, 'edges').forEach(edge => edge.pathOptions({ focus: Edge.FocusMode.NA }));
-                this.__showSelector(selMarkG);
                 this.__drawConnections(sel, this.connections, this.shadows);
             }, 0);
         });
     }
 
-    __showSelector (mount, pos) {
-        let sel = mount
-            .selectAll('circle')
-            .data(pos ? [pos] : []);
-
-        sel.exit().remove();
-
-        sel = sel
-            .enter()
-            .append('circle')
-            .merge(sel)
-            .attr('r', 4)
-            .attr('cx', d => d.x)
-            .attr('cy', d => d.y);
-
-        return sel;
-    }
 
     __drawConnections (mount, connections, shadows) {
         // Draw the paths
@@ -201,14 +179,17 @@ export default class EdgeManager {
             cls += ` ${d[1].seqHash()}`;
             return cls;
         }).merge(edgeSel).style('stroke', d => d[1].to.config.color).attr('d', d =>
-            d[1].pathHist[0].path).transition(this.transition).attr('d', d => d[0]).style('opacity', (d) => {
+            d[1].pathHist[0].path).style('opacity', (d) => {
                 const options = d[1].pathOptions();
-                if (options.focus === Edge.FocusMode.UNFOCUSED) {
-                    return 0.05;
+
+                if (options.select === Edge.SelectMode.ON) {
+                    return 1;
+                } else if (options.focus === Edge.FocusMode.UNFOCUSED) {
+                    return 0.03;
                 }
 
-                return 1;
-            });
+                return 0.35;
+            }).transition(this.transition).attr('d', d => d[0]);
 
         // Draw shadows for interaction
         conPath = [];

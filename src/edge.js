@@ -27,6 +27,7 @@ export default class Edge {
         this._options = {
             path: this.constructor.pathOptions()
         };
+        this._partOf = null;
         this._target = null;
         this.pathHist = [];
     }
@@ -34,7 +35,8 @@ export default class Edge {
     static pathOptions () {
         return {
             expansionFactor: 4,
-            focus: Edge.FocusMode.NA
+            focus: Edge.FocusMode.NA,
+            select: Edge.SelectMode.OFF
         };
     }
 
@@ -44,6 +46,15 @@ export default class Edge {
 
     seqHash () {
         return this._seqHash;
+    }
+
+    partOf (...params) {
+        if (params.length) {
+            this._partOf = params[0];
+            return this;
+        }
+
+        return this._partOf;
     }
 
     pathOptions (...params) {
@@ -94,5 +105,10 @@ export default class Edge {
 Edge.FocusMode = {
     FOCUSED: 1,
     UNFOCUSED: -1,
-    NA: 0
+    NA: 0,
+};
+
+Edge.SelectMode = {
+    ON: 1,
+    OFF: -1
 };
