@@ -114,10 +114,10 @@ export default class EdgeManager {
             const hash = el.attr('class').split(/\s+/)[2];
             const edges = this.shadows[hash].edges;
 
+            this._evtRecords.transitionMutationLock = true;
             clearTimeout(this._evtRecords.outTimer);
             this._evtRecords.overTimer = setTimeout(() => {
                 this._evtRecords.overTimer = null;
-                this._evtRecords.transitionMutationLock = true;
 
                 edges.forEach(edge => edge.pathOptions({ expansionFactor: 16, focus: Edge.FocusMode.FOCUSED }));
                 difference(this.shadows, hash, 'edges').forEach(edge =>
@@ -138,6 +138,7 @@ export default class EdgeManager {
             const hash = el.attr('class').split(/\s+/)[2];
             const edges = this.shadows[hash].edges;
             const point = mouse(sel.node());
+            point[1] -= 2;
             const distances = edges.map((edge, i) => {
                 const dist = edge.distance(point);
                 dist.i = i;
@@ -150,7 +151,6 @@ export default class EdgeManager {
         shadowSel.on('mouseout', () => {
             const el = select(event.target);
             const hash = el.attr('class').split(/\s+/)[2];
-            // const point = mouse(sel.node());
             const edges = this.shadows[hash].edges;
 
             clearTimeout(this._evtRecords.overTimer);
