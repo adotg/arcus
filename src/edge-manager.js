@@ -154,7 +154,7 @@ export default class EdgeManager {
                 this._evtRecords.transitionMutationLock = false;
 
                 this.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.OFF }));
-                edges.forEach(edge => edge.pathOptions({ expansionFactor: 4 }));
+                edges.forEach(edge => edge.pathOptions({ expansionFactor: 8 }));
                 union(this.shadows, 'edges').forEach(edge => edge.pathOptions({ focus: Edge.FocusMode.NA }));
                 this.__drawConnections(sel, this.connections, this.shadows);
             }, 0);

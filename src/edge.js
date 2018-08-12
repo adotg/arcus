@@ -34,7 +34,7 @@ export default class Edge {
 
     static pathOptions () {
         return {
-            expansionFactor: 4,
+            expansionFactor: 8,
             focus: Edge.FocusMode.NA,
             select: Edge.SelectMode.OFF
         };
@@ -66,11 +66,11 @@ export default class Edge {
         return this._options.path;
     }
 
-    path () {
+    path (control = { breadingSpace: 0 }) {
         const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        const r = (tpx - fpx) * 0.75 + movement;
+        const r = (tpx - fpx) * 0.75 + movement + control.breadingSpace;
         const inst = new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx);
         const path = inst.toSVG();
         const hist = this.pathHist;
@@ -85,11 +85,11 @@ export default class Edge {
         return [path, this];
     }
 
-    reversePath () {
+    reversePath (control = { breadingSpace: 0 }) {
         const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        const r = (tpx - fpx) * 0.75 + movement;
+        const r = (tpx - fpx) * 0.75 + movement + control.breadingSpace;
 
         return [new Bezier(0, tpx, r, tpx, r, fpx, 0, fpx).toSVG(), this];
     }
