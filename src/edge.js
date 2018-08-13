@@ -71,6 +71,7 @@ export default class Edge {
         const fpx = this.from.px();
         const tpx = this.to.px();
         const r = (tpx - fpx) * 0.75 + movement + control.breadingSpace;
+
         const inst = new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx);
         const path = inst.toSVG();
         const hist = this.pathHist;

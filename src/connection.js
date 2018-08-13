@@ -24,7 +24,8 @@ export default class Connection {
 
     path () {
         return {
-            forward: this.directions.forward.map(edge => edge.path())
+            forward: this.directions.forward.map(edge => edge.path()),
+            backward: this.directions.backward.map(edge => edge.path())
         };
     }
 }

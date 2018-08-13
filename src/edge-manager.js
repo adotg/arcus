@@ -168,11 +168,11 @@ export default class EdgeManager {
         const flattenConPath = { forward: [], backward: [] };
         for (let i = 0, path; path = conPath[i++];) {
             flattenConPath.forward.push(...path.forward);
+            flattenConPath.backward.push(...path.backward);
         }
 
         mount.selectAll('path.arcus-edge').interrupt();
-
-        let edgeSel = mount.selectAll('path.arcus-edge').data(flattenConPath.forward);
+        let edgeSel = mount.selectAll('path.arcus-edge').data([...flattenConPath.forward, ...flattenConPath.backward]);
         edgeSel.exit().remove();
         edgeSel = edgeSel.enter().append('path').classed('arcus-edge', true).attr('class', function (d) {
             let cls = select(this).attr('class');
