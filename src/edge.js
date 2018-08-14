@@ -86,6 +86,13 @@ export default class Edge {
         return [path, this];
     }
 
+    r (control = { breadingSpace: 0 }) {
+        const movement = this.sequence * this._options.path.expansionFactor;
+        const fpx = this.from.px();
+        const tpx = this.to.px();
+        return (tpx - fpx) * 0.75 + movement + control.breadingSpace;
+    }
+
     reversePath (control = { breadingSpace: 0 }) {
         const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();

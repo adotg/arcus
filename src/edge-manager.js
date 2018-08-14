@@ -4,7 +4,15 @@ import { easeCubic } from 'd3-ease';
 import Edge from './edge';
 import Connection from './connection';
 import Shadow from './shadow';
-import { difference, union } from './utils';
+import { difference, union, EdgeDirection } from './utils';
+
+const addTranslate = (node, newTranslate) => {
+    const translate = node.attr('transform');
+    let matchedVal = translate.match(/(\d+)\s*,\s*(\d+)/);
+    matchedVal = matchedVal.slice(0).map(val => parseInt(val, 0));
+
+    return [matchedVal[0] + newTranslate[0], matchedVal[1] + newTranslate[1]];
+};
 
 const connectionResolver = (edges) => {
     const connectionPool = {};
@@ -100,6 +108,16 @@ export default class EdgeManager {
 
 
         const [, shadowSel] = this.__drawConnections(sel, this.connections, this.shadows);
+
+        const maxBackwardShadow = Object.values(this.shadows)
+            .filter(shadow => shadow.direction === EdgeDirection.BACKWARD).reduce((store, shadow) =>
+                (store.edges.length > shadow.edges.length ? store : shadow)
+            , { edges: { length: Number.NEGATIVE_INFINITY } });
+
+        const backwardShadowEnd = maxBackwardShadow.edges[maxBackwardShadow.edges.length - 1];
+        const cumulativeTranslate = addTranslate(mount, [-backwardShadowEnd.r(), 0]);
+        mount.attr('transform', `translate(${cumulativeTranslate[0]}, ${cumulativeTranslate[1]})`);
+
 
         shadowSel.on('mouseover', () => {
             const el = select(event.target);
