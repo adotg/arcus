@@ -66,11 +66,11 @@ export default class Edge {
         return this._options.path;
     }
 
-    path (control = { breadingSpace: 0 }) {
+    path (control = { breathingSpace: 0 }) {
         const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        const r = (tpx - fpx) * 0.75 + movement + control.breadingSpace;
+        const r = (tpx - fpx) * 0.75 + movement + control.breathingSpace;
 
         const inst = new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx);
         const path = inst.toSVG();
@@ -86,18 +86,18 @@ export default class Edge {
         return [path, this];
     }
 
-    r (control = { breadingSpace: 0 }) {
+    r (control = { breathingSpace: 0 }) {
         const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        return (tpx - fpx) * 0.75 + movement + control.breadingSpace;
+        return (tpx - fpx) * 0.75 + movement + control.breathingSpace;
     }
 
-    reversePath (control = { breadingSpace: 0 }) {
+    reversePath (control = { breathingSpace: 0 }) {
         const movement = this.sequence * this._options.path.expansionFactor;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        const r = (tpx - fpx) * 0.75 + movement + control.breadingSpace;
+        const r = (tpx - fpx) * 0.75 + movement + control.breathingSpace;
 
         return [new Bezier(0, tpx, r, tpx, r, fpx, 0, fpx).toSVG(), this];
     }

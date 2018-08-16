@@ -114,7 +114,16 @@ export default class EdgeManager {
                 (store.edges.length > shadow.edges.length ? store : shadow)
             , { edges: { length: Number.NEGATIVE_INFINITY } });
 
+        const maxForwardShadow = Object.values(this.shadows)
+            .filter(shadow => shadow.direction === EdgeDirection.FORWARD).reduce((store, shadow) =>
+                (store.edges.length > shadow.edges.length ? store : shadow)
+            , { edges: { length: Number.NEGATIVE_INFINITY } });
+
         const backwardShadowEnd = maxBackwardShadow.edges[maxBackwardShadow.edges.length - 1];
+        const forwardShadowEnd = maxForwardShadow.edges[maxForwardShadow.edges.length - 1];
+
+        [backwardShadowEnd, forwardShadowEnd].map(edge => edge.pathOptions({ expansionFactor: 16 }));
+
         const cumulativeTranslate = addTranslate(mount, [-backwardShadowEnd.r(), 0]);
         mount.attr('transform', `translate(${cumulativeTranslate[0]}, ${cumulativeTranslate[1]})`);
 
@@ -177,6 +186,8 @@ export default class EdgeManager {
                 this.__drawConnections(sel, this.connections, this.shadows);
             }, 0);
         });
+
+        return [Math.abs(backwardShadowEnd.r()) + Math.abs(forwardShadowEnd.r())];
     }
 
 

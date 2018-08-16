@@ -99,9 +99,11 @@ export default class Arcus {
             `translate(${this.config.padding[0]}, ${this.config.padding[1] + this.config.nodeSize * 0.5})`);
 
         this._frames.draw(sel, this.config);
-        this._edges.draw(sel, this.config);
+        const [edgeWidth] = this._edges.draw(sel, this.config);
 
         body.attr('height', `${frameSize * this.config.frameLength + (frameSize - 1) * this.config.frameSpacing +
             2 * this.config.padding[1] + this.config.nodeSize}px`);
+
+        body.attr('width', `${edgeWidth + this.config.padding[0]}px`);
     }
 }
