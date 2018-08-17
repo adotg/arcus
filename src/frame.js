@@ -50,7 +50,7 @@ export default class Frame {
         sl.setStyle({
             fontFamily: 'Roboto, sans-serif',
             fontSize: '16px',
-            fontWeight: 400,
+            fontWeight: 300,
             fontStyle: 'normal'
         });
         this._dims.desc = sl.getOriSize(source.desc || '');
