@@ -1,13 +1,13 @@
-const drawText = (mount, text) => {
-    let sel = mount.selectAll('text').data([text]);
+const drawText = (mount, text, options) => {
+    let sel = mount.selectAll(`text.${options.cls}`).data([text]);
     sel.exit().remove();
-    sel = sel.enter().append('text');
+    sel = sel.enter().append('text').classed(options.cls, true).attr('y', options.shiftY ? options.shiftY : 0);
 
     sel = sel.selectAll('tspan').data(d => d);
     sel.exit().remove();
-    sel.enter().append('tspan').attr('dy', 16).merge(sel).text(d => d);
+    sel.enter().append('tspan').attr('dy', 16).attr('x', 0).merge(sel).text(d => d);
 
-    return sel;
+    return 16 * text.length;
 };
 
 
@@ -63,14 +63,20 @@ export default class Frame {
     draw (mount, config) {
         const sl = this._dep.sl;
         const source = this.source;
-        const lines = sl.constructor.textToLines(sl.getSmartText(source.name, ...config.labelBBox.width)).lines;
         this._mount = mount;
+        const labelCls = 'arcus-frame-label';
 
-        let sel = mount.selectAll('g.arcus-frame-label').data([1]);
+        let sel = mount.selectAll(`g.${labelCls}`).data([1]);
         sel.exit().remove();
-        sel = sel.enter().append('g').classed('arcus-frame-label', true);
+        sel = sel.enter().append('g').classed(labelCls, true);
 
-        drawText(sel, lines);
+        // Draw header
+        let lines = sl.constructor.textToLines(sl.getSmartText(source.name, config.labelBBox.width)).lines;
+        const height = drawText(sel, lines, { cls: `${labelCls}-head` });
+
+        // Draw desc
+        lines = sl.constructor.textToLines(sl.getSmartText(source.desc, config.labelBBox.width)).lines;
+        drawText(sel, lines, { cls: `${labelCls}-desc`, shiftY: height + 8 /* mandatory padding */});
 
         sel = mount.selectAll('g.arcus-frame-marks').data([1]);
         sel.exit().remove();
