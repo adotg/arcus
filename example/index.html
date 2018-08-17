@@ -29,10 +29,15 @@
         stroke: #414141;
       }
 
-      svg {
-        background: antiquewhite;
+      .arcus-frame-label {
+        fill: #414141;
+        stroke: none;
+        font-size: 16px;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700;
       }
     </style>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
   </head>
   <body>
     <div id='root'></div>
@@ -161,7 +166,12 @@
             }
           }
         ],
-        frames: [ { name: 'Sprint 1' }, { name: 'Sprint 2' }, { name: 'Sprint 3' }, { name: 'Sprint 4' }],
+        frames: [ 
+          { name: 'Sprint 1', desc: 'Lorem ipsum dolor sit amet' },
+          { name: 'Sprint 2', desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.' },
+          { name: 'Sprint 3' },
+          { name: 'Sprint 4', desc: 'Lorem ipsum dolor sit amet' }
+        ],
         nodes: [
           { name: 'To Do', config: { color: '#9e9e9e' }},
           { name: 'In Progress', config: { color: '#3f51b5' }},

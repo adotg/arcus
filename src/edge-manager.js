@@ -98,13 +98,14 @@ export default class EdgeManager {
     }
 
     draw (mount, config) {
+        let backwardShadowR;
         let sel = mount
             .selectAll('g.arcus-edges')
             .data([1]);
 
         sel.exit().remove();
         sel = sel.enter().append('g').attr('class', 'arcus-edges').attr('transform',
-            `translate(${config.labelBBox}, 0)`);
+            `translate(${config.labelBBox.width}, 0)`);
 
 
         const [, shadowSel] = this.__drawConnections(sel, this.connections, this.shadows);
@@ -124,7 +125,7 @@ export default class EdgeManager {
 
         [backwardShadowEnd, forwardShadowEnd].map(edge => edge.pathOptions({ expansionFactor: 16 }));
 
-        const cumulativeTranslate = addTranslate(mount, [-backwardShadowEnd.r(), 0]);
+        const cumulativeTranslate = addTranslate(mount, [-(backwardShadowR = backwardShadowEnd.r()), 0]);
         mount.attr('transform', `translate(${cumulativeTranslate[0]}, ${cumulativeTranslate[1]})`);
 
 
@@ -187,7 +188,7 @@ export default class EdgeManager {
             }, 0);
         });
 
-        return [Math.abs(backwardShadowEnd.r()) + Math.abs(forwardShadowEnd.r())];
+        return [Math.abs(backwardShadowR) + Math.abs(forwardShadowEnd.r()), { shiftX: backwardShadowR }];
     }
 
 

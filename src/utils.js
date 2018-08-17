@@ -1,7 +1,7 @@
 export const resolver = (frames, config) => {
     const frameMap = {};
     for (let i = 0, frame; frame = frames[i++];) {
-        frameMap[frame.name] = {
+        frameMap[frame.source.name] = {
             inst: frame,
             nodeMap: frame.nodes.reduce((store, node) => {
                 store[node.name] = {

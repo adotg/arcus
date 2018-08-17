@@ -26,7 +26,7 @@ export default class Arcus {
             nodeSpacing: 50,
             frameSpacing: 80,
             nodeSize: 4,
-            maxFrameLabelLength: 120,
+            maxFrameLabelLength: 250,
             padding: [20, 20],
             delimiter: '.'
         };
@@ -59,7 +59,7 @@ export default class Arcus {
                 data.frames.map((frame, i) => {
                     const offset = i * ((data.nodes.length - 1) * this.config.nodeSpacing + this.config.frameSpacing);
                     const inst = new Frame(
-                        frame.name,
+                        frame,
                         data.nodes.map((node, ii) => {
                             let nInst = new Node(node.name, ii,
                                 Object.assign({ size: this.config.nodeSize }, node.config));
@@ -98,12 +98,13 @@ export default class Arcus {
         sel = sel.enter().append('g').attr('transform',
             `translate(${this.config.padding[0]}, ${this.config.padding[1] + this.config.nodeSize * 0.5})`);
 
-        this._frames.draw(sel, this.config);
-        const [edgeWidth] = this._edges.draw(sel, this.config);
+        const [frameElWidth] = this._frames.draw(sel, this.config);
+        const [edgeWidth, settings] = this._edges.draw(sel, this.config);
+        this._frames.postDrawingAdjust({ offsetX: settings.shiftX });
 
         body.attr('height', `${frameSize * this.config.frameLength + (frameSize - 1) * this.config.frameSpacing +
             2 * this.config.padding[1] + this.config.nodeSize}px`);
 
-        body.attr('width', `${edgeWidth + this.config.padding[0]}px`);
+        body.attr('width', `${frameElWidth + edgeWidth + this.config.padding[0]}px`);
     }
 }
