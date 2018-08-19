@@ -33,7 +33,10 @@ export default class Frame {
         this._mount = null;
         this._dep = dependencies;
 
-        nodes.forEach(node => node.pOrder = order);
+        nodes.forEach((node) => {
+            node.association = this;
+            node.pOrder = order;
+        });
 
         const sl = this._dep.sl;
 
