@@ -1,3 +1,5 @@
+/* global requestAnimationFrame */
+
 import { select } from 'd3-selection';
 import SmartLabelManager from 'fusioncharts-smartlabel';
 import Node from './node';
@@ -6,6 +8,29 @@ import FrameManager from './frame-manager';
 import Edge from './edge';
 import EdgeManager from './edge-manager';
 import { resolver } from './utils';
+import Context from './context';
+
+const render = self =>
+    () => {
+        const body = self.bodyEl();
+        const frameSize = self._frames.size();
+        self.config.frameLength = (self._data.nodes.length - 1) * self.config.nodeSpacing;
+
+        let sel = body.selectAll('g').data([1]);
+
+        sel.exit().remove();
+        sel = sel.enter().append('g').attr('transform',
+            `translate(${self.config.padding[0]}, ${self.config.padding[1] + self.config.nodeSize * 0.5})`);
+
+        const [frameElWidth] = self._frames.draw(sel, self.config);
+        const [edgeWidth, settings] = self._edges.draw(sel, self.config);
+        self._frames.postDrawingAdjust({ offsetX: settings.shiftX });
+
+        body.attr('height', `${frameSize * self.config.frameLength + (frameSize - 1) * self.config.frameSpacing +
+            2 * self.config.padding[1] + self.config.nodeSize}px`);
+
+        body.attr('width', `${frameElWidth + edgeWidth + self.config.padding[0]}px`);
+    };
 
 export default class Arcus {
     constructor (config) {
@@ -19,6 +44,7 @@ export default class Arcus {
         this._frames = null;
         this._edges = null;
         this._slManager = new SmartLabelManager(+new Date());
+        this._context = new Context();
     }
 
     static defaultConfig () {
@@ -44,6 +70,12 @@ export default class Arcus {
             return this;
         }
         return this._mount;
+    }
+
+    contextInf (mount, cb) {
+        const ctx = this._context;
+        ctx.mount(select(mount));
+        return ctx.registerListener(cb);
     }
 
     bodyEl () {
@@ -88,23 +120,7 @@ export default class Arcus {
     }
 
     render () {
-        const body = this.bodyEl();
-        const frameSize = this._frames.size();
-        this.config.frameLength = (this._data.nodes.length - 1) * this.config.nodeSpacing;
-
-        let sel = body.selectAll('g').data([1]);
-
-        sel.exit().remove();
-        sel = sel.enter().append('g').attr('transform',
-            `translate(${this.config.padding[0]}, ${this.config.padding[1] + this.config.nodeSize * 0.5})`);
-
-        const [frameElWidth] = this._frames.draw(sel, this.config);
-        const [edgeWidth, settings] = this._edges.draw(sel, this.config);
-        this._frames.postDrawingAdjust({ offsetX: settings.shiftX });
-
-        body.attr('height', `${frameSize * this.config.frameLength + (frameSize - 1) * this.config.frameSpacing +
-            2 * this.config.padding[1] + this.config.nodeSize}px`);
-
-        body.attr('width', `${frameElWidth + edgeWidth + this.config.padding[0]}px`);
+        requestAnimationFrame(render(this));
+        return this;
     }
 }
