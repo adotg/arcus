@@ -10,6 +10,7 @@
       html {
         padding: 0;
         margin: 0;
+        font-family: 'Roboto', sans-serif;
       }
       .arcus-frame-line {
         stroke: #dcdcdc;
@@ -38,7 +39,6 @@
         fill: #414141;
         stroke: none;
         font-size: 16px;
-        font-family: 'Roboto', sans-serif;
       }
 
       .arcus-frame-label-head {
@@ -51,7 +51,8 @@
 
       #con-inf-mount {
         position: fixed;
-        background: lightblue;
+        background: #D7EFEE;
+
       }
 
       .banner {
@@ -66,6 +67,10 @@
 
       #root {
         margin: 80px 50px;
+      }
+
+      .norm-pad {
+        padding: 10px 20px;
       }
 
     </style>
@@ -219,9 +224,7 @@
         .mount('#root', [600, 1200])
         .data(data)
         .render()
-        .contextInf('#con-inf-mount', (data, mount) => {
-          mount.html(data);
-        })
+        .contextInf('#con-inf-mount')
         
     </script>
   </body>
