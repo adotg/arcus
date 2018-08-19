@@ -1,4 +1,4 @@
-export default class Context {
+export default class {
     constructor () {
         this._mount = null;
         this._listeners = [];
@@ -16,5 +16,9 @@ export default class Context {
     registerListener (fn) {
         const i = this._listeners.push(fn) - 1;
         return () => this._listeners.splice(i, 1);
+    }
+
+    action (payload) {
+        console.log(payload);
     }
 }

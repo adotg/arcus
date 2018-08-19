@@ -8,7 +8,7 @@ import FrameManager from './frame-manager';
 import Edge from './edge';
 import EdgeManager from './edge-manager';
 import { resolver } from './utils';
-import Context from './context';
+import Circumstance from './circumstance';
 
 const render = self =>
     () => {
@@ -44,7 +44,7 @@ export default class Arcus {
         this._frames = null;
         this._edges = null;
         this._slManager = new SmartLabelManager(+new Date());
-        this._context = new Context();
+        this._circumstance = new Circumstance();
     }
 
     static defaultConfig () {
@@ -73,7 +73,7 @@ export default class Arcus {
     }
 
     contextInf (mount, cb) {
-        const ctx = this._context;
+        const ctx = this._circumstance;
         ctx.mount(select(mount));
         return ctx.registerListener(cb);
     }
@@ -113,7 +113,7 @@ export default class Arcus {
                 edge.key, {
                     inf: edge.inf,
                     path: [edge.from, edge.to]
-                })), this._frames);
+                })), this._frames, this);
             return this;
         }
         return this._data;

@@ -83,9 +83,10 @@ const applySequence = (edges) => {
 };
 
 export default class EdgeManager {
-    constructor (edges, frames) {
+    constructor (edges, frames, referrer) {
         this.edges = edges;
         this.frames = frames;
+        this._referrer = referrer;
 
         applySequence(edges);
 
@@ -99,6 +100,7 @@ export default class EdgeManager {
 
     draw (mount, config) {
         let backwardShadowR;
+        const circumstance = this._referrer._circumstance;
         let sel = mount
             .selectAll('g.arcus-edges')
             .data([1]);
@@ -142,7 +144,12 @@ export default class EdgeManager {
                 edges.forEach(edge => edge.pathOptions({ expansionFactor: 16, focus: Edge.FocusMode.FOCUSED }));
                 difference(this.shadows, hash, 'edges').forEach(edge =>
                     edge.pathOptions({ focus: Edge.FocusMode.UNFOCUSED }));
+
                 this.__drawConnections(sel, this.connections, this.shadows);
+                circumstance.action({
+                    action: 'mouseover',
+                    affectedSet: edges
+                });
 
                 setTimeout(() => {
                     this._evtRecords.transitionMutationLock = false;
