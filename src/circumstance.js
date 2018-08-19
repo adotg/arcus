@@ -1,3 +1,4 @@
+/* global FusionCharts */
 const formatter = (edges) => {
     const sample = edges[0];
     return `
@@ -6,6 +7,24 @@ const formatter = (edges) => {
             ${sample.to.name} of ${sample.to.association.source.name}</i> is ${edges.length}
         </div>
     `;
+};
+
+const vizMount = () => `
+    <div id='circum-viz' class='norm-pad'></div>
+`;
+
+const prepareData = (edges) => {
+    const hash = edges.reduce((store, edge) => {
+        if (edge.key in store) {
+            store[edge.key]++;
+        } else {
+            store[edge.key] = 1;
+        }
+
+        return store;
+    }, {});
+
+    return Object.entries(hash).map(([key, occurrence]) => ({ value: occurrence, tooltext: `${key}: ${occurrence}` }));
 };
 
 export default class {
@@ -28,9 +47,34 @@ export default class {
         return () => this._listeners[0] = formatter;
     }
 
-    action () {
-        // const text = formatter(payload.affectedSet);
-        // this._mount.html(text);
-        // Render
+    action (payload) {
+        const content = formatter(payload.affectedSet);
+        this._mount.html(content + vizMount());
+        FusionCharts.ready(() => {
+            const fc = new FusionCharts({
+                type: 'sparkcolumn',
+                renderAt: 'circum-viz',
+                width: 200,
+                height: 50,
+                dataFormat: 'json',
+                theme: 'fusion',
+                dataSource: {
+                    chart: {
+                        caption: 'Repeatation',
+                        charttopmargin: '10',
+                        theme: 'fusion',
+                        bgColor: '#D7EFEE',
+                        captionFont: 'Roboto',
+                        captionFontBold: 0,
+                        highColor: '5d62b5',
+                        lowColor: '5d62b5'
+                    },
+                    dataset: [
+                        { data: prepareData(payload.affectedSet) }
+                    ]
+                }
+            });
+            fc.render();
+        });
     }
 }
