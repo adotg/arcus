@@ -8,6 +8,10 @@ export default class Shadow {
         this.direction = direction(edges);
     }
 
+    spread () {
+        return Math.abs(this.edges[this.edges.length - 1].r());
+    }
+
     path () {
         const edges = this.edges;
         return [[
