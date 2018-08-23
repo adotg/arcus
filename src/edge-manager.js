@@ -115,7 +115,7 @@ export default class EdgeManager {
         const maxBackwardShadow = Object.values(this.shadows)
             .filter(shadow => shadow.direction === EdgeDirection.BACKWARD).reduce((store, shadow) =>
                 (store.spread() > shadow.spread() ? store : shadow)
-            , { spread: () => Number.NEGATIVE_INFINITY });
+            , { spread: () => Number.NEGATIVE_INFINITY, edges: [{ r: () => 0, pathOptions: () => {} }] });
 
         const maxForwardShadow = Object.values(this.shadows)
             .filter(shadow => shadow.direction === EdgeDirection.FORWARD).reduce((store, shadow) =>
