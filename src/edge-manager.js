@@ -4,7 +4,7 @@ import { easeCubic } from 'd3-ease';
 import Edge from './edge';
 import Connection from './connection';
 import Shadow from './shadow';
-import { difference, union, EdgeDirection } from './utils';
+import { edgeOrderCode, difference, union, EdgeDirection } from './utils';
 
 const addTranslate = (node, newTranslate) => {
     const translate = node.attr('transform');
@@ -12,6 +12,98 @@ const addTranslate = (node, newTranslate) => {
     matchedVal = matchedVal.slice(0).map(val => parseInt(val, 0));
 
     return [matchedVal[0] + newTranslate[0], matchedVal[1] + newTranslate[1]];
+};
+
+const adjustEdges = (edges) => {
+    const flowMap = {};
+    const history = [];
+    let maxJump = Number.NEGATIVE_INFINITY;
+    let map;
+    let entries;
+    let backTrackLevel;
+    let c1;
+    let c2 = [];
+    let c3;
+    let shift;
+    let fwdStart;
+
+    // @warn currently backward edges are not adjusted.
+    edges.filter(_ => edgeOrderCode(_) === EdgeDirection.FORWARD).forEach((edge) => {
+        const jump = edge.jump();
+        map = flowMap[edge.from.absOrder] = flowMap[edge.from.absOrder] || {};
+        map = map[jump] = map[jump] || ({ edges: [] });
+        map.edges.push(edge);
+
+        if (jump > maxJump) {
+            maxJump = jump;
+        }
+    });
+
+    // For each level <- jump starting with 1
+    for (let level = 1; level <= maxJump; level++) {
+        // For each entry in flowmap. Entry here is the start of an edge, jump is recorded in the outer loop
+        for (let start in flowMap) {
+            // If an edge with specified jump is not present for this node then continue
+            if (!(level in flowMap[start])) {
+                continue;
+            }
+
+            start = +start;
+            c2.length = 0;
+
+            entries = flowMap[start][level];
+            // Count of edges which start form same node and goes to same node
+            entries.cardinality = entries.edges.length;
+            entries.cumulativeCardinality = 0;
+
+            // Update edge shift of current level with the previous level by finding covered area
+
+            // c1 <- Find out the covered area by collecting for the same start point by doning (level--) till
+            // level > 1. This takes care of all the levels coming from same start node for a frame.
+            backTrackLevel = level;
+            while (--backTrackLevel >= 1) {
+                if (!(backTrackLevel in flowMap[start])) {
+                    continue;
+                }
+                c1 = flowMap[start][backTrackLevel].cardinality + flowMap[start][backTrackLevel].cumulativeCardinality;
+                break;
+            }
+
+            // c2 <- Find out the covered area under the jurisdiction of a different frame by collecting the nodes from
+            // the condition (start + level < maxStart + maxLevel) by maximizing maxStart and maxLevel where maxStart is
+            // another start in flowMap and maxLevel is maximum level in separate jurisdiction.
+            fwdStart = start;
+            backTrackLevel = level;
+            while (++fwdStart) {
+                if (fwdStart >= start + level) {
+                    break;
+                }
+
+                while (--backTrackLevel >= 1) {
+                    if (!(fwdStart in flowMap && backTrackLevel in flowMap[fwdStart])) {
+                        continue;
+                    }
+
+                    // If the current position is already covered earlier during longer jump, then ignore
+                    if (!!history.filter(_ => _.start + _.level >= fwdStart + backTrackLevel).length) {
+                        continue;
+                    }
+
+                    history.push({ start: fwdStart, level: backTrackLevel });
+                    c2.push(flowMap[fwdStart][backTrackLevel].cardinality);
+                    c2.push(flowMap[fwdStart][backTrackLevel].cardinality +
+                        flowMap[fwdStart][backTrackLevel].cumulativeCardinality);
+                }
+            }
+
+            c3 = c2.concat([c1 || 0]);
+            shift = Math.max(...c3);
+            entries.cumulativeCardinality = shift;
+            entries.edges.forEach(_ => _.shift = shift);
+        }
+    }
+
+    console.log(flowMap);
 };
 
 const connectionResolver = (edges) => {
@@ -90,6 +182,8 @@ export default class EdgeManager {
 
         applySequence(edges);
 
+
+        adjustEdges(this.edges);
         this.connections = connectionResolver(edges);
         this.shadows = shadowResolver(edges);
         this._transitionTime = 300;

@@ -20,6 +20,7 @@ export default class Edge {
         this.key = key;
         this.meta = meta;
         this.sequence = null;
+        this.shift = null;
 
         const path = meta.path;
         this._seqStr = `${path[0]}-${path[1]}`;
@@ -66,11 +67,16 @@ export default class Edge {
         return this._options.path;
     }
 
+    jump () {
+        return Math.abs(this.to.absOrder - this.from.absOrder);
+    }
+
     path (control = { breathingSpace: 0 }) {
-        const movement = this.sequence * this._options.path.expansionFactor;
+        const expFact = this._options.path.expansionFactor;
+        const movement = this.sequence * expFact;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        const r = (tpx - fpx) * 0.75 + movement + control.breathingSpace;
+        const r = (tpx - fpx) * 0.75 + movement + control.breathingSpace + this.shift * 8;
 
         const inst = new Bezier(0, fpx, r, fpx, r, tpx, 0, tpx);
         const path = inst.toSVG();
@@ -87,17 +93,19 @@ export default class Edge {
     }
 
     r (control = { breathingSpace: 0 }) {
-        const movement = this.sequence * this._options.path.expansionFactor;
+        const expFact = this._options.path.expansionFactor;
+        const movement = this.sequence * expFact;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        return (tpx - fpx) * 0.75 + movement + control.breathingSpace;
+        return (tpx - fpx) * 0.75 + movement + control.breathingSpace + this.shift * 8;
     }
 
     reversePath (control = { breathingSpace: 0 }) {
-        const movement = this.sequence * this._options.path.expansionFactor;
+        const expFact = this._options.path.expansionFactor;
+        const movement = this.sequence * expFact;
         const fpx = this.from.px();
         const tpx = this.to.px();
-        const r = (tpx - fpx) * 0.75 + movement + control.breathingSpace;
+        const r = (tpx - fpx) * 0.75 + movement + control.breathingSpace + this.shift * 8;
 
         return [new Bezier(0, tpx, r, tpx, r, fpx, 0, fpx).toSVG(), this];
     }
