@@ -36,6 +36,7 @@ export default class Frame {
         nodes.forEach((node) => {
             node.association = this;
             node.pOrder = order;
+            node.absOrder = order * this.nodes.length + node.order;
         });
 
         const sl = this._dep.sl;
