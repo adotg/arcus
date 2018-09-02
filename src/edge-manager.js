@@ -102,8 +102,6 @@ const adjustEdges = (edges) => {
             entries.edges.forEach(_ => _.shift = shift);
         }
     }
-
-    console.log(flowMap);
 };
 
 const connectionResolver = (edges) => {
@@ -181,9 +179,8 @@ export default class EdgeManager {
         this._referrer = referrer;
 
         applySequence(edges);
-
-
         adjustEdges(this.edges);
+
         this.connections = connectionResolver(edges);
         this.shadows = shadowResolver(edges);
         this._transitionTime = 300;
