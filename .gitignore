@@ -1,3 +1,6 @@
+# Private data
+private_data.js
+
 # PLATFORM
 # ========
 # All exclusions that are specific to the NPM, GIT, IDE and Operating Systems.
