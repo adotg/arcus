@@ -7,6 +7,7 @@ export default class Node {
         this.offsetY = null;
         this.order = order;
         this.pOrder = null;
+        this.absOrder = null;
     }
 
     px () {
