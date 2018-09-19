@@ -1,15 +1,15 @@
 {
     "name": "arcus",
     "version": "1.0.0",
-    "description": "Timelapse arc diagram",
+    "description": "Faceted arc diagram",
     "main": "src/index.js",
-    "license": "MIT",
+    "license": "GNU GPLv3",
     "author": "akash goswami",
     "keywords": [],
     "preferGlobal": false,
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/akash-goswami/arcus.git"
+        "url": "git+https://github.com/adotg/arcus.git"
     },
     "devDependencies": {
         "babel-cli": "6.26.0",
