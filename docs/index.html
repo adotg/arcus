@@ -50,7 +50,7 @@
       }
 
       #root {
-        margin: 80px 50px;
+        margin: 50px;
       }
 
       .norm-pad {
@@ -64,10 +64,26 @@
         color: #fff;
       }
 
+      h2 {
+        margin: 20px 70px;
+      }
+
+      .legend {
+        height: 150px;
+        width: 175px;
+        position: fixed;
+        right: 50px;
+        top: 80px;
+        background: url('legend.png');
+        border: 1px solid #dcdcdc;
+      }
+
     </style>
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,700" rel="stylesheet">
   </head>
   <body>
+    <h2>Flow of Issues across Sprints</h2>
+    <div class="legend"></div>
     <div id='root'></div>
     <script type="text/javascript" src="./data.js"></script>
     <script type="text/javascript" src="./dist/arcus.js"></script>
