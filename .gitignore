@@ -1,5 +1,8 @@
-# Private data
+# Raw data
 private_data.js
+
+# Adapter to format which arcus understands directly.
+extraction_script.js
 
 # PLATFORM
 # ========
