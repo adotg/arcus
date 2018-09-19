@@ -1,10 +1,12 @@
+/* global document */
+
 import { select, event, mouse } from 'd3-selection';
 import { transition } from 'd3-transition';
 import { easeCubic } from 'd3-ease';
 import Edge from './edge';
 import Connection from './connection';
 import Shadow from './shadow';
-import { edgeOrderCode, difference, union, EdgeDirection } from './utils';
+import { edgeOrderCode, EdgeDirection } from './utils';
 
 const addTranslate = (node, newTranslate) => {
     const translate = node.attr('transform');
@@ -189,9 +191,18 @@ export default class EdgeManager {
         this._evtRecords = {};
     }
 
-    draw (mount, config) {
+    draw (mount, baseMount, config) {
         let backwardShadowR;
         const circumstance = this._referrer._circumstance;
+        const body = select(document.body);
+
+        let selMarkG = mount
+            .selectAll('g.arcus-edge-sel-mark')
+            .data([1]);
+        selMarkG.exit().remove();
+        selMarkG = selMarkG.enter().append('g').attr('class', 'arcus-edge-sel-mark').attr('transform',
+            `translate(${config.labelBBox.width}, 0)`);
+
         let sel = mount
             .selectAll('g.arcus-edges')
             .data([1]);
@@ -199,7 +210,6 @@ export default class EdgeManager {
         sel.exit().remove();
         sel = sel.enter().append('g').attr('class', 'arcus-edges').attr('transform',
             `translate(${config.labelBBox.width}, 0)`);
-
 
         const [, shadowSel] = this.__drawConnections(sel, this.connections, this.shadows);
 
@@ -226,28 +236,41 @@ export default class EdgeManager {
             const el = select(event.target);
             const hash = el.attr('class').split(/\s+/)[2];
             const edges = this.shadows[hash].edges;
+            const point = mouse(sel.node());
 
             this._evtRecords.transitionMutationLock = true;
             clearTimeout(this._evtRecords.outTimer);
             this._evtRecords.overTimer = setTimeout(() => {
                 this._evtRecords.overTimer = null;
 
-                edges.forEach(edge => edge.pathOptions({ expansionFactor: 16, focus: Edge.FocusMode.FOCUSED }));
-                difference(this.shadows, hash, 'edges').forEach(edge =>
-                    edge.pathOptions({ focus: Edge.FocusMode.UNFOCUSED }));
-
-                this.__drawConnections(sel, this.connections, this.shadows);
-                circumstance.action({
-                    action: 'mouseover',
-                    affectedSet: edges
+                this._evtRecords.transitionMutationLock = false;
+                const distances = edges.map((edge, i) => {
+                    const dist = edge.distance(point);
+                    dist.i = i;
+                    return dist;
                 });
-
-                setTimeout(() => {
-                    this._evtRecords.transitionMutationLock = false;
-                }, this._transitionTime);
+                const nearest = minDist(distances);
+                this.__showSelector(selMarkG, nearest);
             }, 100);
         });
         shadowSel.on('mousemove', () => {
+            if (this._evtRecords.transitionMutationLock) {
+                return;
+            }
+
+            const el = select(event.target);
+            const hash = el.attr('class').split(/\s+/)[2];
+            const edges = this.shadows[hash].edges;
+            const point = mouse(sel.node());
+            const distances = edges.map((edge, i) => {
+                const dist = edge.distance(point);
+                dist.i = i;
+                return dist;
+            });
+            const nearest = minDist(distances);
+            this.__showSelector(selMarkG, nearest);
+        });
+        shadowSel.on('click', () => {
             if (this._evtRecords.transitionMutationLock) {
                 return;
             }
@@ -267,28 +290,52 @@ export default class EdgeManager {
 
             this.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.OFF }));
             conn.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.ON }));
+
+            circumstance.action({
+                action: 'click',
+                affectedSet: conn,
+                point: mouse(baseMount.node())
+            });
+
+            this.__drawConnections(sel, this.connections, this.shadows);
+
+            event.stopPropagation();
+        });
+        body.on('click', () => {
+            this.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.NA }));
+            circumstance.action({
+                action: 'click',
+                affectedSet: null
+            });
             this.__drawConnections(sel, this.connections, this.shadows);
         });
         shadowSel.on('mouseout', () => {
-            const el = select(event.target);
-            const hash = el.attr('class').split(/\s+/)[2];
-            const edges = this.shadows[hash].edges;
-
             clearTimeout(this._evtRecords.overTimer);
             this._evtRecords.outTimer = setTimeout(() => {
                 this._evtRecords.outTimer = null;
                 this._evtRecords.transitionMutationLock = false;
 
-                this.edges.map(edge => edge.pathOptions({ select: Edge.SelectMode.OFF }));
-                edges.forEach(edge => edge.pathOptions({ expansionFactor: 8 }));
-                union(this.shadows, 'edges').forEach(edge => edge.pathOptions({ focus: Edge.FocusMode.NA }));
-                this.__drawConnections(sel, this.connections, this.shadows);
+                this.__showSelector(selMarkG, null);
             }, 0);
         });
 
         return [Math.abs(backwardShadowR) + Math.abs(forwardShadowEnd.r()), { shiftX: backwardShadowR }];
     }
 
+    __showSelector (mount, pos) {
+        let sel = mount
+            .selectAll('circle')
+            .data(pos ? [pos] : []);
+        sel.exit().remove();
+        sel = sel
+            .enter()
+            .append('circle')
+            .merge(sel)
+            .attr('r', 4)
+            .attr('cx', d => d.x)
+            .attr('cy', d => d.y);
+        return sel;
+    }
 
     __drawConnections (mount, connections, shadows) {
         // Draw the paths
@@ -312,8 +359,8 @@ export default class EdgeManager {
 
                 if (options.select === Edge.SelectMode.ON) {
                     return 1;
-                } else if (options.focus === Edge.FocusMode.UNFOCUSED) {
-                    return 0.03;
+                } else if (options.select === Edge.SelectMode.OFF) {
+                    return 0.02;
                 }
 
                 return 0.35;
