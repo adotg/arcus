@@ -49,22 +49,6 @@
         font-weight: 300;
       }
 
-      #con-inf-mount {
-        position: fixed;
-        background: #D7EFEE;
-
-      }
-
-      .banner {
-        width: 100%;
-        height: 100px;
-        margin: 0px;
-      }
-
-      .space {
-        margin-bottom: 50px;
-      }
-
       #root {
         margin: 80px 50px;
       }
@@ -73,98 +57,38 @@
         padding: 10px 20px;
       }
 
+      .arcus-tooltip {
+        position: absolute;
+        background-color: rgba(41, 41, 41, 0.95);
+        border: 1px solid #fff;
+        color: #fff;
+      }
+
     </style>
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,700" rel="stylesheet">
   </head>
   <body>
-    <div id='con-inf-mount' class="banner"></div>
-    <div class="banner space"></div>
     <div id='root'></div>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fusioncharts@3.13.1/fusioncharts.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fusioncharts@3.13.1/fusioncharts.widgets.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/fusioncharts@3.13.1/themes/fusioncharts.theme.fusion.js"></script>
-    <script type="text/javascript" src="./private_data.js"></script>
-    <!-- <script type="text/javascript" src="./data_slice.js"></script> -->
+    <script type="text/javascript" src="./data.js"></script>
     <script type="text/javascript" src="./arcus.js"></script>
     <script type="text/javascript">
-      let resp;
-      let rData = [];
-      let hash = {};
-      for (let i = 0; i < data.length; i++) {
-        let issues = data[i].issues;
-        for (let j = 0; j < issues.length; j++) {
-          let key = issues[j].key;
-          if (key in hash) {
-            continue;
-          } else {
-            hash[key] = 1;
-          }
-          resp = { key: key };
-          if (issues[j].fields.issuetype.subtask) {
-            continue;
-          }
-          let histories = issues[j].changelog.histories;
-          let sprint;
-          let status = {};
-          let arr;
-          for (let k = histories.length - 1; k >= 0; k--) {
-            for (let m = histories[k].items.length - 1; m >= 0; m--) {
-              let item = histories[k].items[m];
-              if (item.field === 'Sprint') {
-                arr = item.toString.split(',');
-                let nowSprint = arr[arr.length - 1].trim();
-
-                if (!nowSprint) { continue; }
-                if (!sprint) { sprint = nowSprint; continue; }
-                if (nowSprint === sprint) { continue; }
-
-                rData.push({
-                  key: key,
-                  from: sprint + '.' + (status.to || 'To Do'),
-                  to: nowSprint + '.' + (status.to || 'To Do'),
-                  inf: {}
-                });
-
-                sprint = nowSprint;
-              } else if (item.field === 'status') {
-                if (!sprint) { continue; }
-                status = {
-                  from: item.fromString,
-                  to: item.toString
-                }
-
-                rData.push({
-                  key: key,
-                  from: sprint + '.' + status.from,
-                  to: sprint + '.' + status.to,
-                  inf: {}
-                });
-              } else {
-                continue;
-              }
-            }
-          }
-        }
-      }
-
-
       const _data = {
         edges: rData,
         frames: [ 
-          { name: 'WEBX Sprint 1', desc: 'Lorem ipsum dolor sit amet' },
-          { name: 'WEBX Sprint 2', desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.' },
-          { name: 'WEBX Sprint 3' },
-          { name: 'WEBX Sprint 4', desc: 'Lorem ipsum dolor sit amet' },
-          { name: 'WEBX Sprint 5', desc: 'Lorem ipsum dolor sit amet' },
-          { name: 'WEBX Sprint 6', desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.' },
-          { name: 'WEBX Sprint 7' },
-          { name: 'WEBX Sprint 8', desc: 'Lorem ipsum dolor sit amet' },
-          { name: 'WEBX Sprint 9', desc: 'Lorem ipsum dolor sit amet' },
-          { name: 'WEBX Sprint 10', desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.' },
-          { name: 'WEBX Sprint 11' },
-          { name: 'WEBX Sprint 12', desc: 'Lorem ipsum dolor sit amet' },
-          { name: 'WEBX Sprint 13', desc: 'Lorem ipsum dolor sit amet' },
-          { name: 'WEBX Sprint 14', desc: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.' },
+          { name: 'BSE Sprint 1', desc: 'Project kick off' },
+          { name: 'BSE Sprint 2', desc: 'Damage Control' },
+          { name: 'BSE Sprint 3' },
+          { name: 'BSE Sprint 4', desc: 'Improvement on existing site' },
+          { name: 'BSE Sprint 5', desc: 'Lorem ipsum dolor sit amet' },
+          { name: 'BSE Sprint 6', desc: 'Update experience and product sample. 1 / 3 Sprints.' },
+          { name: 'BSE Sprint 7', desc: 'Update experience and product sample. 2 / 3 Sprints. '},
+          { name: 'BSE Sprint 8', desc: 'Update content with newly designed component 3 / 3 Sprints.' },
+          { name: 'BSE Sprint 9', desc: 'Marketing and analytics update. 4 / 3 Sprints.' },
+          { name: 'BSE Sprint 10', desc: 'Product gallery improvements. 5 / 3 Sprints.' },
+          { name: 'BSE Sprint 11', desc: 'Feedback implementation.' },
+          { name: 'BSE Sprint 12', desc: 'Product resources update' },
+          { name: 'BSE Sprint 13', desc: '' },
+          { name: 'BSE Sprint 14', desc: 'Outsiders content and 3rd party integration.' },
         ],
         nodes: [
           { name: 'To Do', config: { color: '#9e9e9e' }},
