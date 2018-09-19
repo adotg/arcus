@@ -34,3 +34,23 @@ Arcus records every sprints and how issues move from one sprint to next sprint.
 ## Screens
 
 ![full-screen](https://raw.githubusercontent.com/adotg/arcus/master/docs/arcus-full.png)
+
+## Data
+
+Data extracted from Atlassian JIRA.
+
+## Disclaimer
+
+This project was an experiment or rather a quick dirty work of a solution for some problem I was facing for sometime. I
+created it for my own use, but later I found out few interesting engineers who were interested in the soultion. However,
+at this point of time I have no plan to continue it until its too important for me / someone else.
+
+You would easily see disruption in workflow like
+- Direct commit in master
+- Api for creating future stuff with incomplete implementation
+- No data extraction / transformation proceudre mentioned
+- No documentation
+- No npm release
+- No package.json sanitization
+
+etc.
