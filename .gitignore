@@ -60,8 +60,5 @@ develop/template/modular
 # Ignore .tmp folder created for mocha-webpack test cases
 /.tmp/
 
-# Ignore docs folder created by jsdoc
-/docs
-
 # Ignore coverage folder created by karma
 coverage
