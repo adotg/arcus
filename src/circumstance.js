@@ -1,45 +1,40 @@
-/* global FusionCharts */
-const formatter = (edges) => {
-    const sample = edges[0];
+const formatter = (conn) => {
+    const sample = conn.edges[0];
     return `
         <div class='norm-pad'>
-            Total issues moved from <i>${sample.from.name} of ${sample.from.association.source.name}</i> to <i>
-            ${sample.to.name} of ${sample.to.association.source.name}</i> is ${edges.length}
+            <div style="font-weight: 700">${sample.key}</div>
+            <div style="font-weight: 300; padding-top: 8px;">${sample.meta.inf.summary}</div>
+            <div style="font-weight: 300; font-size: 14px; padding: 8px 0px;">
+                <span>Assignee: ${sample.meta.inf.assignee}</span>
+                <span style="margin-left: 20px">Story Point: ${sample.meta.inf.sp}</span>
+            </div>
         </div>
     `;
-};
-
-const vizMount = () => `
-    <div id='circum-viz' class='norm-pad'></div>
-`;
-
-const prepareData = (edges) => {
-    const hash = edges.reduce((store, edge) => {
-        if (edge.key in store) {
-            store[edge.key]++;
-        } else {
-            store[edge.key] = 1;
-        }
-
-        return store;
-    }, {});
-
-    return Object.entries(hash).map(([key, occurrence]) => ({ value: occurrence, tooltext: `${key}: ${occurrence}` }));
 };
 
 export default class {
     constructor () {
         this._mount = null;
         this._listeners = [formatter];
+        this._data = null;
     }
 
     mount (...params) {
+        let arg;
         if (params.length) {
-            this._mount = params[0];
+            arg = params[0];
+            this._mount = arg.append('div').classed('arcus-tooltip', true)
+                .style('display', 'none');
+
             return this;
         }
 
         return this._mount;
+    }
+
+    data (data) {
+        this._data = data;
+        return this;
     }
 
     registerListener (fn) {
@@ -48,33 +43,13 @@ export default class {
     }
 
     action (payload) {
+        if (!payload.affectedSet) {
+            this._mount.style('display', 'none');
+            return;
+        }
+        const coord = payload.point;
         const content = formatter(payload.affectedSet);
-        this._mount.html(content + vizMount());
-        FusionCharts.ready(() => {
-            const fc = new FusionCharts({
-                type: 'sparkcolumn',
-                renderAt: 'circum-viz',
-                width: 200,
-                height: 50,
-                dataFormat: 'json',
-                theme: 'fusion',
-                dataSource: {
-                    chart: {
-                        caption: 'Repeatation',
-                        charttopmargin: '10',
-                        theme: 'fusion',
-                        bgColor: '#D7EFEE',
-                        captionFont: 'Roboto',
-                        captionFontBold: 0,
-                        highColor: '5d62b5',
-                        lowColor: '5d62b5'
-                    },
-                    dataset: [
-                        { data: prepareData(payload.affectedSet) }
-                    ]
-                }
-            });
-            fc.render();
-        });
+        this._mount.html(content).style('display', 'inline-block').style('left', `${coord[0] + 100}px`)
+                        .style('top', `${coord[1] + 50}px`);
     }
 }
