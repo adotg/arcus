@@ -37,7 +37,7 @@ export default class Edge {
         return {
             expansionFactor: 8,
             focus: Edge.FocusMode.NA,
-            select: Edge.SelectMode.OFF
+            select: Edge.SelectMode.NA
         };
     }
 
@@ -126,5 +126,6 @@ Edge.FocusMode = {
 
 Edge.SelectMode = {
     ON: 1,
-    OFF: -1
+    OFF: -1,
+    NA: 0
 };
