@@ -23,7 +23,7 @@ const render = self =>
             `translate(${self.config.padding[0]}, ${self.config.padding[1] + self.config.nodeSize * 0.5})`);
 
         const [frameElWidth] = self._frames.draw(sel, self.config);
-        const [edgeWidth, settings] = self._edges.draw(sel, self.config);
+        const [edgeWidth, settings] = self._edges.draw(sel, select(self._mount), self.config);
         self._frames.postDrawingAdjust({ offsetX: settings.shiftX });
 
         body.attr('height', `${frameSize * self.config.frameLength + (frameSize - 1) * self.config.frameSpacing +
@@ -72,9 +72,9 @@ export default class Arcus {
         return this._mount;
     }
 
-    contextInf (mount, cb) {
+    contextInf (cb) {
         const ctx = this._circumstance;
-        ctx.mount(select(mount));
+        ctx.mount(select(this._mount));
         return ctx.registerListener(cb);
     }
 
@@ -114,6 +114,8 @@ export default class Arcus {
                     inf: edge.inf,
                     path: [edge.from, edge.to]
                 })), this._frames, this);
+
+            this._circumstance.data(params[0]);
             return this;
         }
         return this._data;
